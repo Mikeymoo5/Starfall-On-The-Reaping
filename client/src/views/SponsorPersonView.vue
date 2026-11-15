@@ -13,13 +13,14 @@ const player = shallowRef({"username": null, "health": 0});
 onMounted(async () => {
     console.log(player.value["username"])
     if (player.value["username"] == null) {
-        errorStore.triggerError("That tribute does not exist!")
+        // errorStore.triggerError("That tribute does not exist!")
     }
     try {
         const response = await fetch(`/api/player/${route.params.id}`);
         player.value = await response.json();
     } catch (error) { 
         // TODO: error handling
+        errorStore.triggerError("That tribute does not exist!")
     }
 });
 
@@ -62,7 +63,7 @@ const rules = [
 <template>
     <v-row class="d-flex align-center justify-center">
         <v-column class="w-25">
-            <p>You are sponsoring: {{ player["username"] }}, with ID: {{ route.params.id }}. They have {{ player["health"] }} / 100 health.</p>
+            <p>You are sponsoring: {{ player["username"] }}. They have {{ player["health"] }} / 100 health.</p>
             <v-card class="pa-4">
                 <v-form ref="formRef" @submit.prevent="submitForm">
                     <v-combobox 

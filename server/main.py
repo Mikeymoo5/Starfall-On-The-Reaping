@@ -8,7 +8,6 @@ from flask_cors import CORS
 
 from flask_socketio import SocketIO, emit
 
-
 # Initialize the DB
 conn = sqlite3.connect("game.db")
 cursor = conn.cursor()
@@ -35,12 +34,30 @@ app.config['SECRET_KEY'] = '4' # baller
 
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:5173")
 
+thread = None
+
 # Enable CORS for local development
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+def update_dashboard():
+    while True:
+        # TODO: this surely isnt the best way to do this
+        conn = sqlite3.connect("game.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM players")
+        rows = cursor.fetchall()
+        players = {id: {"Username": username, "Health": health, "Alive": True} for (id, username, health) in rows} #TODO: pass in alive
+        socketio.emit('player_update', players)
+        socketio.sleep(4)
 
 @socketio.on('connect')
 def handle_connect():
     emit('server_response', {'data': 'Connected!'})
+
+    global thread
+    if thread is None:
+        thread = socketio.start_background_task(update_dashboard)
 
 @socketio.on('send_message')
 def handle_message(payload):
@@ -94,7 +111,7 @@ def post_update_data():
         conn.commit()
         conn.close()
         return formatted_data
-    return "no"
+    return "error" # TODO: actually return an error
 
 @app.route('/api/player/<int:user_id>', methods=['GET'])
 def get_player(user_id):
@@ -110,6 +127,16 @@ def get_player(user_id):
         "health": row[2],
     }
     return player_data
+
+@app.route('/api/players', methods=['GET'])
+def get_players():
+    conn = sqlite3.connect("game.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM players")
+    rows = cursor.fetchall()
+    players = {id: {"Username": username, "Health": health, "Alive": True} for (id, username, health) in rows} #TODO: pass in alive
+    return players
 
 @app.route('/api/send-gift', methods=['POST'])
 def send_gift():
@@ -131,4 +158,4 @@ def send_gift():
     return {"success": "true"}
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True, host="0.0.0.0")
+    socketio.run(port=5000, debug=True, host="0.0.0.0")

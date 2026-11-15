@@ -8,13 +8,33 @@ const ajv = new Ajv(); // TODO: may be unecessary
 // const serverMessage = ref("Loading... ")
 let players = shallowRef([{ id: 1, name: 'Item #1'}])
 const hasData = ref(false); 
-onMounted(async () => {
 
-    socket.on("player_update", (data) => {
+function update_players(data: any) {
+    if (Object.keys(data).length === 0) {
+        hasData.value = false;
+    } else {
         players.value = data;
-        console.log(data);
-        console.log(players.value);
         hasData.value = true;
+    }
+
+}
+
+onMounted(async () => {
+    try {
+        const response = await fetch("/api/players")
+        const data = await response.json();
+        update_players(data)
+        // players.value = data;
+        // hasData.value = true;
+    } catch (error) {
+        // TODO: handle errors
+    }
+    socket.on("player_update", (data) => {
+        update_players(data)
+        // players.value = data;
+        // console.log(data);
+        // console.log(players.value);
+        // hasData.value = true;
     });
 
 // players = 

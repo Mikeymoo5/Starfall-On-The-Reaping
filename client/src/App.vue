@@ -30,7 +30,14 @@ const errorStore = useErrorStore()
         <RouterView />
       </v-main>
 
-      <v-snackbar :timeout="2000" prepend-icon="mdi-alert-circle" color="error" v-model="errorStore.showPopup" class="pa-0 ">
+      <v-snackbar 
+        :timeout="2000" 
+        prepend-icon="mdi-alert-circle" 
+        color="error" 
+        v-model="errorStore.showPopup" 
+        class="pb-3"
+        location="top end"
+        >
           <v-text>{{ errorStore.message }}</v-text>
           <template v-slot:actions>
             <v-btn icon="mdi-close" @click="errorStore.closePopup()"></v-btn>
