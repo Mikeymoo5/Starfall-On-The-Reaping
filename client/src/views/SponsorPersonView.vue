@@ -18,6 +18,9 @@ onMounted(async () => {
     try {
         const response = await fetch(`/api/player/${route.params.id}`);
         player.value = await response.json();
+        if(player.value["health"] <= 0) {
+            errorStore.triggerError("You cannot sponsor a dead tribute.")
+        }
     } catch (error) { 
         // TODO: error handling
         errorStore.triggerError("That tribute does not exist!")

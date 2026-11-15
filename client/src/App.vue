@@ -21,11 +21,11 @@ const errorStore = useErrorStore()
             <v-btn to="/" icon="mdi-home"></v-btn>
           </template>
           
-          <v-btn to="/sponsor">Sponsor</v-btn>
+          <!-- <v-btn to="/sponsor">Sponsor</v-btn> -->
 
-          <template v-slot:append>
+          <!-- <template v-slot:append>
             <v-btn to="/account" icon="mdi-account"></v-btn>
-          </template>
+          </template> -->
         </v-app-bar>
         <RouterView />
       </v-main>

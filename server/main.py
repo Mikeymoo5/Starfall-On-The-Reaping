@@ -21,6 +21,15 @@ cursor.execute("""
 """)
 
 cursor.execute("""
+    CREATE TABLE IF NOT EXISTS health_logs (
+        log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        player_id INTEGER NOT NULL,
+        health INTEGER NOT NULL,
+        recorded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+""")
+
+cursor.execute("""
     CREATE TABLE IF NOT EXISTS gifts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         player_id ITNEGER NOT NULL,
@@ -28,6 +37,7 @@ cursor.execute("""
         sent BOOL NOT NULL DEFAULT 0 CHECK (sent IN (0, 1))
     )
 """)
+
 conn.commit()
 conn.close()
 
@@ -51,7 +61,20 @@ def update_dashboard():
         rows = cursor.fetchall()
         players = {id: {"Username": username, "Health": health, "Alive": alive} for (id, username, health, alive) in rows} #TODO: pass in alive
         socketio.emit('player_update', players)
-        socketio.sleep(4)
+
+
+        cursor.execute("SELECT player_id, health FROM health_logs ORDER BY log_id ASC")
+        logw_rows = cursor.fetchall()
+
+        history_data = {}
+        for player_id, health in logw_rows:
+            if player_id not in history_data:
+                history_data[player_id] = []
+            history_data[player_id].append(health)
+        socketio.emit('history_update', history_data)
+
+        conn.close()
+        socketio.sleep(3)
 
 @socketio.on('connect')
 def handle_connect():
@@ -76,17 +99,18 @@ def post_update_data():
         # TODO: Add check for start / end of game
         data = request.get_json()
         if(data == ['START']):
+            
             print("Start command received")
-            return {"status": "success"}
-        #     conn = sqlite3.connect("game")
-        #     cursor = conn.cursor()
-        #     cursor.execute("TRUNCATE TABLE gifts")
-        #     cursor.execute("TRUNCATWE TABLE playerws")
-        #     conn.commit()
-        #     conn.close()
+            conn = sqlite3.connect("game.db")
+            cursor = conn.cursor()
+            # cursor.execute("DELETE FROM gifts")
+            cursor.execute("DELETE FROM players")
+            cursor.execute("DELETE FROM health_logs")
+            conn.commit()
+            conn.close()
 
-        #     print("start")
-        #     return True
+            print("start")
+            return {"status": "success"}
 
         players = data["Players"]
         players = {str(abs(int(key))): value for (key, value) in players.items()}
@@ -100,18 +124,28 @@ def post_update_data():
         cursor = conn.cursor()
 
         # cursor.execute("UPDATE players SET alive = ?", (False,))
+        player_data = [{"id": user_id, **data} for user_id, data in players.items()]
 
-        query = """
+        replace_current_query = """
             INSERT OR REPLACE INTO players (id, username, health, alive)
             VALUES (:id, :Username, :Health, :Alive)
         """
 
-        rows = ({"id": user_id, **data} for user_id, data in players.items())
-        print(rows)
-        cursor.executemany(query, rows)
+        # Replaces current player data
+        cursor.executemany(replace_current_query, player_data)
+
+        update_logs_query = """
+            INSERT INTO health_logs (player_id, health)
+            VALUES (:id, :Health)
+        """
+
+        cursor.executemany(update_logs_query, player_data)
+
         conn.commit()
+
         conn.close()
         return {"status": "success"}
+    
     elif request.method == 'GET':
         # BUG: probably some sort of race condition in here
         conn = sqlite3.connect("game.db")
