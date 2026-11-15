@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 
 import { ref, onMounted, shallowRef } from 'vue';
 import { socket, state } from '@/socket'
@@ -7,12 +7,14 @@ import Ajv from "ajv";
 const ajv = new Ajv(); // TODO: may be unecessary
 // const serverMessage = ref("Loading... ")
 let players = shallowRef([{ id: 1, name: 'Item #1'}])
+const hasData = ref(false); 
 onMounted(async () => {
 
     socket.on("player_update", (data) => {
         players.value = data;
         console.log(data);
         console.log(players.value);
+        hasData.value = true;
     });
 
 // players = 
@@ -34,13 +36,13 @@ onMounted(async () => {
     <h2>Home</h2>
     <v-row>
         <v-column class="ml-10">
-            <v-list>
+            <v-list v-if="hasData">
                 <template v-for="(value, key) in players"
                     :key="key"
                 >
                     <v-list-item>
                         <template v-slot:prepend>
-                            <v-btn icon="mdi-gift"></v-btn>
+                            <v-btn icon="mdi-gift" :to="`/sponsor/${key}`"></v-btn>
                             <span class="mr-3">{{ value["Username"]}}</span>
                             <v-divider vertical class="mx-4"></v-divider>
                             <span>Health: {{  value["Health"] }}</span>
@@ -50,5 +52,6 @@ onMounted(async () => {
                 </template>
             </v-list>
         </v-column>
+        <p v-if="!hasData">The games have not begun!</p>
     </v-row>
 </template>
