@@ -61,14 +61,28 @@ onMounted(async () => {
                     :key="key"
                 >
                     <v-list-item>
-                        <template v-slot:prepend>
-                            <v-btn icon="mdi-gift" :to="`/sponsor/${key}`"></v-btn>
-                            <span class="mr-3">{{ value["Username"]}}</span>
+                        <v-row align="center">
+                            <v-col cols="5" class="d-flex">
+                                <v-btn icon="mdi-gift" :to="`/sponsor/${key}`"></v-btn>
+                                <span class="mr-3">{{ value["Username"]}}</span>
+                            </v-col>
+
                             <v-divider vertical class="mx-4"></v-divider>
-                            <span>Health: {{  value["Health"] }}</span>
-                        </template>
+
+                            <v-col>
+                                <v-progress-linear 
+                                    color="pink"
+                                    height=25
+                                    rounded=sm 
+                                    :model-value="value['Health']"
+                                ></v-progress-linear>
+                            </v-col>
+
+                            <v-col>
+                                <span>{{value["Health"]}}/100</span>
+                            </v-col>
+                        </v-row>
                     </v-list-item>
-                    <v-divider></v-divider>
                 </template>
             </v-list>
         </v-column>

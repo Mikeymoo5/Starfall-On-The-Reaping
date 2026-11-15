@@ -15,9 +15,11 @@ cursor.execute("""
     CREATE TABLE IF NOT EXISTS players (
         id INTEGER PRIMARY KEY,
         username TEXT NOT NULL,
-        health INTEGER
+        health INTEGER,
+        alive BOOL NOT NULL DEFAULT 0 CHECK (alive IN (0, 1))
     )
 """)
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS gifts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,7 +49,7 @@ def update_dashboard():
 
         cursor.execute("SELECT * FROM players")
         rows = cursor.fetchall()
-        players = {id: {"Username": username, "Health": health, "Alive": True} for (id, username, health) in rows} #TODO: pass in alive
+        players = {id: {"Username": username, "Health": health, "Alive": alive} for (id, username, health, alive) in rows} #TODO: pass in alive
         socketio.emit('player_update', players)
         socketio.sleep(4)
 
@@ -73,17 +75,35 @@ def post_update_data():
         # The game sent data
         # TODO: Add check for start / end of game
         data = request.get_json()
-        print(data)
+        if(data == ['START']):
+            print("Start command received")
+            return {"status": "success"}
+        #     conn = sqlite3.connect("game")
+        #     cursor = conn.cursor()
+        #     cursor.execute("TRUNCATE TABLE gifts")
+        #     cursor.execute("TRUNCATWE TABLE playerws")
+        #     conn.commit()
+        #     conn.close()
+
+        #     print("start")
+        #     return True
+
         players = data["Players"]
+        players = {str(abs(int(key))): value for (key, value) in players.items()}
+
+        print(f"data: {data} players: {players}")
         socketio.emit('player_update', players) # Transmits the data to the frontend TODO: eventually remove, instead send data to frontend via db
 
         # Sends data to the db #TODO: if server does not receive heartbeat for a player who is in the db update their status to be dead (health = 0) 
         # could maybe just set everyone to zero before the insert or replace call?
         conn = sqlite3.connect("game.db")
         cursor = conn.cursor()
+
+        # cursor.execute("UPDATE players SET alive = ?", (False,))
+
         query = """
-            INSERT OR REPLACE INTO players (id, username, health)
-            VALUES (:id, :Username, :Health)
+            INSERT OR REPLACE INTO players (id, username, health, alive)
+            VALUES (:id, :Username, :Health, :Alive)
         """
 
         rows = ({"id": user_id, **data} for user_id, data in players.items())
@@ -102,7 +122,6 @@ def post_update_data():
         rows = cursor.fetchall()
         formatted_data = {gift_id: {"recepient_id": recepient_id, "gift_type": gift_type} for (gift_id, recepient_id, gift_type, sent) in rows}
         sent_ids = [(key,) for key in formatted_data]
-        print(sent_ids)
 
         update_sent_query = """
             UPDATE gifts SET sent = 1 WHERE id = ?
@@ -135,7 +154,7 @@ def get_players():
 
     cursor.execute("SELECT * FROM players")
     rows = cursor.fetchall()
-    players = {id: {"Username": username, "Health": health, "Alive": True} for (id, username, health) in rows} #TODO: pass in alive
+    players = {id: {"Username": username, "Health": health, "Alive": alive} for (id, username, health, alive) in rows} #TODO: pass in alive
     return players
 
 @app.route('/api/send-gift', methods=['POST'])

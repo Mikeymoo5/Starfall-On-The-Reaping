@@ -9,6 +9,7 @@ The kids are able to fight it out in the Roblox arena until only one remains as 
 
 ## How we built it
 The game itself is built in Roblox. It uses Roblox's HttpService to make POST and GET calls to the companion website.
+The website's backend is made with Flask, which then communcates via websockets with the frontend, made in Vue. The frontend uses Vite as a build system and dev server, and uses the Vuetify component library.
 
 ## Accomplishments that we're proud of
 It works (:
