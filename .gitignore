@@ -1,0 +1,6 @@
+server/__pycache__/
+server/.venv/
+server/node_m
+*.db
+
+client/node_modules
