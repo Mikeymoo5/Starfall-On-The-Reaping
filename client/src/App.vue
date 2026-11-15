@@ -1,4 +1,8 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useErrorStore } from './stores/errorStore';
+
+const errorStore = useErrorStore()
+</script>
 
 <template>
   <v-app>
@@ -25,6 +29,14 @@
         </v-app-bar>
         <RouterView />
       </v-main>
+
+      <v-snackbar :timeout="2000" prepend-icon="mdi-alert-circle" color="error" v-model="errorStore.showPopup" class="pa-0 ">
+          <v-text>{{ errorStore.message }}</v-text>
+          <template v-slot:actions>
+            <v-btn icon="mdi-close" @click="errorStore.closePopup()"></v-btn>
+          </template>
+      </v-snackbar>
+
     </v-app>
 </template>
 

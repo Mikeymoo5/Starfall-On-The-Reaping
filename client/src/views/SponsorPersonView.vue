@@ -1,11 +1,20 @@
 <script setup lang="ts">
+import { useErrorStore } from '@/stores/errorStore';
 import { onMounted, ref, shallowRef } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
-const player = shallowRef({"username": "placeholder", "health": 0});
+const router = useRouter();
+
+const errorStore = useErrorStore()
+
+const player = shallowRef({"username": null, "health": 0});
 
 onMounted(async () => {
+    console.log(player.value["username"])
+    if (player.value["username"] == null) {
+        errorStore.triggerError("That tribute does not exist!")
+    }
     try {
         const response = await fetch(`/api/player/${route.params.id}`);
         player.value = await response.json();
