@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, shallowRef } from 'vue';
-import { useRoute} from 'vue-router';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const player = shallowRef({"username": "placeholder", "health": 0});
@@ -14,8 +14,58 @@ onMounted(async () => {
     }
 });
 
+const formRef = ref()
+const selectedValue = ref(null)
+
+const submitForm = async () => {
+    const { valid } = await formRef.value.validate()
+    if (valid) {
+        try {
+            const payload = {
+                player_id: route.params.id,
+                item: selectedValue.value,
+                sent: false,
+            };
+
+            const response = await fetch("/api/send-gift", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            console.log("success");
+        } catch (error) {
+            // TODO: handle errors
+            console.log(error)
+        }
+    }
+    };
+
+const rules = [
+    (value: any) => {
+        if (value) return true
+        return "You must choose something to donate "
+    }
+]
 
 </script>
 <template>
-    <p>You are sponsoring: {{ player["username"] }}, with ID: {{ route.params.id }}. They have {{ player["health"] }} / 100 health.</p>
+    <v-row class="d-flex align-center justify-center">
+        <v-column class="w-25">
+            <p>You are sponsoring: {{ player["username"] }}, with ID: {{ route.params.id }}. They have {{ player["health"] }} / 100 health.</p>
+            <v-card class="pa-4">
+                <v-form ref="formRef" @submit.prevent="submitForm">
+                    <v-combobox 
+                        label="Donation"
+                        v-model="selectedValue"
+                        :items="['Sword', 'Bow', 'Potion']"
+                        :rules="rules"
+                        variant="outlined"
+                    ></v-combobox>
+                    <v-btn block type="submit" color="primary">Donate</v-btn>
+                </v-form>
+            </v-card>
+        </v-column>
+    </v-row>
 </template>

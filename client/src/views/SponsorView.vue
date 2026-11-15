@@ -1,3 +1,3 @@
 <template>
-    <p>you're so generous</p>
+    <p>Who do you want to sponsor?</p>
 </template>
