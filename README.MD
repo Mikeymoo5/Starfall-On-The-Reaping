@@ -1,5 +1,5 @@
 # Starfall on the Reaping
-![Game Thumbnail]("./thumbnail.png")
+![Game Thumbnail](https://tr.rbxcdn.com/180DAY-7a047690abd1221b47bc8f630eb868d2/768/432/Image/Webp/noFilter)
 
 ## Inspiration
 Starfall on the Reaping is inspired by The Hunger Games franchise. It aims to recreate both the experience of fighting in the arena itself and the experience of viewing as a rich citizen of The Capitol.
