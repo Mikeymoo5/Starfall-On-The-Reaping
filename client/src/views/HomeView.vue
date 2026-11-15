@@ -55,37 +55,35 @@ onMounted(async () => {
 <template>
     <h2>Home</h2>
     <v-row>
-        <v-column class="ml-10">
-            <v-list v-if="hasData">
-                <template v-for="(value, key) in players"
-                    :key="key"
-                >
+        <v-col cols="auto" class="ml-10">
+            <v-list v-if="hasData" class="pr-4">
+                <template v-for="(value, key) in players" :key="key">
                     <v-list-item>
-                        <v-row align="center">
-                            <v-col cols="5" class="d-flex">
-                                <v-btn icon="mdi-gift" :to="`/sponsor/${key}`"></v-btn>
-                                <span class="mr-3">{{ value["Username"]}}</span>
+                        <v-row align="center" no-gutters>
+                            <v-col cols="auto" style="min-width: 145px;" class="d-flex align-center">
+                                <v-btn icon="mdi-gift" :to="`/sponsor/${key}`" class="mr-3"></v-btn>
+                                <span>{{ value["Username"] }}</span>
                             </v-col>
 
                             <v-divider vertical class="mx-4"></v-divider>
 
-                            <v-col>
+                            <v-col style="width: 350px;">
                                 <v-progress-linear 
                                     color="pink"
-                                    height=25
-                                    rounded=sm 
+                                    height="25"
+                                    rounded="sm" 
                                     :model-value="value['Health']"
                                 ></v-progress-linear>
                             </v-col>
 
-                            <v-col>
-                                <span>{{value["Health"]}}/100</span>
+                            <v-col cols="auto" class="d-flex align-center pl-4">
+                                <span>{{ value["Health"] }}/100</span>
                             </v-col>
                         </v-row>
                     </v-list-item>
                 </template>
             </v-list>
-        </v-column>
+        </v-col>
         <p v-if="!hasData">The games have not begun!</p>
     </v-row>
 </template>
